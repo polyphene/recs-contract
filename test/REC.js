@@ -27,7 +27,7 @@ describe("REC", function () {
 
         await payload.rec
             .connect(payload.minter)
-            .mintAndAllocate(uri, 15, [payload.redeemer.address], [15]);
+            .mintAndAllocate(uri, 15, [payload.redeemer.address], [15], [false]);
 
         return { ...payload, uri };
     }
@@ -74,7 +74,7 @@ describe("REC", function () {
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
-            await expect(rec.connect(nobody).mintAndAllocate(uri, 10, [], [])).to.be.revertedWith(
+            await expect(rec.connect(nobody).mintAndAllocate(uri, 10, [], [], [])).to.be.revertedWith(
                 "Sender must have MINTER_ROLE to mint new tokens"
             );
         });
@@ -85,8 +85,18 @@ describe("REC", function () {
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
             await expect(
-                rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [])
+                rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [], [false])
             ).to.be.revertedWith("Allocated and allocations arrays must be of the same length");
+        });
+
+        it("Should revert if allocated and allocations redeemed have different length", async function () {
+            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+
+            const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
+
+            await expect(
+                rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [10], [false, true])
+            ).to.be.revertedWith("Allocated and allocations redeemed arrays must be of the same length");
         });
 
         it("Should revert if allocations amount to more than supply amount", async function () {
@@ -95,7 +105,7 @@ describe("REC", function () {
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
             await expect(
-                rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [20])
+                rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [20], [false])
             ).to.be.revertedWith("ERC1155: insufficient balance for transfer");
         });
 
@@ -104,7 +114,7 @@ describe("REC", function () {
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
-            await rec.connect(minter).mintAndAllocate(uri, 10, [], []);
+            await rec.connect(minter).mintAndAllocate(uri, 10, [], [], []);
 
             await expect(await rec.balanceOf(minter.address, 0)).to.equal(10);
         });
@@ -114,7 +124,7 @@ describe("REC", function () {
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
-            await rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [5]);
+            await rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [5], [false]);
 
             await expect(await rec.balanceOf(minter.address, 0)).to.equal(5);
             await expect(await rec.balanceOf(redeemer.address, 0)).to.equal(5);
@@ -125,7 +135,7 @@ describe("REC", function () {
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
-            await rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [5]);
+            await rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [5], [false]);
 
             await expect(await rec.minterOf(0)).to.equal(minter.address);
         });
@@ -135,9 +145,24 @@ describe("REC", function () {
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
-            await rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [5]);
+            await rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [5], [false]);
 
             await expect(await rec.uri(0)).to.equal(uri);
+        });
+
+        it("Should automatically redeem tokens", async function () {
+            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+
+            const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
+
+            await rec.connect(minter).mintAndAllocate(uri, 10, [redeemer.address], [5], [true]);
+
+            // Balance check
+            await expect(await rec.balanceOf(minter.address, 0)).to.equal(5);
+            await expect(await rec.balanceOf(redeemer.address, 0)).to.equal(0);
+            // Redeem checks
+            await expect(await rec.redeemedSupplyOf(0)).to.equal(5);
+            await expect(await rec.amountRedeemed(redeemer.address, 0)).to.equal(5);
         });
     });
 
@@ -146,7 +171,7 @@ describe("REC", function () {
             const { rec, nobody } = await loadFixture(deployAndMintRECFixture);
 
             await expect(rec.connect(nobody).redeem(0, 5)).to.be.revertedWith(
-                "Sender must have REDEEMER_ROLE to redeem tokens"
+                "Redeemer must have REDEEMER_ROLE to redeem tokens"
             );
         });
 
@@ -212,7 +237,7 @@ describe("REC", function () {
             await expect(
                 rec.connect(minter).setRedemptionStatement(0, "redemtpion-statement-url")
             ).to.be.revertedWith(
-                "All tokens supply should be redeemed before setting the redemption statement"
+                "Supply should be redeemed before setting redemption statement"
             );
         });
 

@@ -15,7 +15,7 @@ describe("Marketplace", function () {
 
         const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
-        await rec.mintAndAllocate(uri, 15, [], []);
+        await rec.mintAndAllocate(uri, 15, [], [], []);
 
         const Marketplace = await ethers.getContractFactory("MarketPlace");
         const marketplace = await Marketplace.deploy();

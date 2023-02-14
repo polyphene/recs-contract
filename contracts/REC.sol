@@ -62,6 +62,7 @@ contract REC is Context, ERC1155, AccessControl {
      * @param amount: uint256, the amount of tokens to mint
      * @param allocated: address[] memory, an array of addresses to allocate the tokens to
      * @param allocations: uint256[] memory, an array of amounts of tokens to allocate to each address
+     * @param allocationsRedeemed: bool[] memory, an array specifying if the allocations should be automatically redeemed
      *
      * Preconditions:
      * - msg.sender must have the MINTER_ROLE
@@ -83,7 +84,8 @@ contract REC is Context, ERC1155, AccessControl {
         string memory tokenUri,
         uint256 amount,
         address[] memory allocated,
-        uint256[] memory allocations
+        uint256[] memory allocations,
+        bool[] memory allocationsRedeemed
     ) public {
         require(
             hasRole(MINTER_ROLE, _msgSender()),
@@ -93,6 +95,10 @@ contract REC is Context, ERC1155, AccessControl {
             allocated.length == allocations.length,
             "Allocated and allocations arrays must be of the same length"
         );
+        require(
+            allocated.length == allocationsRedeemed.length,
+            "Allocated and allocations redeemed arrays must be of the same length"
+        );
 
         // Mint tokens to msgSender
         _mint(_msgSender(), _id, amount, "");
@@ -100,6 +106,9 @@ contract REC is Context, ERC1155, AccessControl {
         // Transfer tokens to each recipients
         for (uint256 i = 0; i < allocated.length; i++) {
             _safeTransferFrom(_msgSender(), allocated[i], _id, allocations[i], "");
+            if(allocationsRedeemed[i]) {
+                _redeem(allocated[i], _id, allocations[i]);
+            }
         }
 
         // Set token supply
@@ -125,23 +134,27 @@ contract REC is Context, ERC1155, AccessControl {
      *
      */
     function redeem(uint256 id, uint256 amount) public {
+        _redeem(_msgSender(), id, amount);
+    }
+
+    function _redeem(address redeemer, uint256 id, uint256 amount) internal {
         require(
-            hasRole(REDEEMER_ROLE, _msgSender()),
-            "Sender must have REDEEMER_ROLE to redeem tokens"
+            hasRole(REDEEMER_ROLE, redeemer),
+            "Redeemer must have REDEEMER_ROLE to redeem tokens"
         );
 
         // Burn tokens
-        _burn(_msgSender(), id, amount);
+        _burn(redeemer, id, amount);
 
         // Set amount as redeemed
-        _redeemed[id][_msgSender()] += amount;
+        _redeemed[id][redeemer] += amount;
 
         // Increase supply _redeemed
         _redeemedSupply[id] += amount;
 
         // [IN PROGRESS] If redemption was validated, set it as not validated anymore
-        if (_validatedRedemptions[id][_msgSender()]) {
-            _validatedRedemptions[id][_msgSender()] = false;
+        if (_validatedRedemptions[id][redeemer]) {
+            _validatedRedemptions[id][redeemer] = false;
         }
     }
 

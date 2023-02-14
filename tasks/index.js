@@ -2,6 +2,9 @@
 // DRAFT!! THIS CODE HAS NOT BEEN AUDITED - USE ONLY FOR PROTOTYPING
 //
 exports = {
+    "getActorId": require('./get-actor-id'),
+    "setApproval": require('./rec/set-approval'),
+    "getApproval": require('./rec/get-approval'),
     "mint": require("./rec/mint"),
     "getAddress": require("./get-address"),
     "redeem": require("./rec/redeem"),
