@@ -31,7 +31,16 @@ contract RECMarketPlace is Context, REC {
     }
 
     // Mapping of token IDs to their listing information
-    mapping(uint256 => TokenListing) private _tokenListings;
+    mapping(uint256 => TokenListing[]) private _tokenListings;
+
+    // ListIndex struct
+    struct ListIndex {
+        bool listed;
+        uint256 index;
+    }
+
+    // Mapping to know if a seller already listed a token: tokenId => seller => (listed, index)
+    mapping(uint256 => mapping(address =>  ListIndex)) private _addressListedToken;
 
     constructor() REC() {}
 
@@ -51,12 +60,21 @@ contract RECMarketPlace is Context, REC {
             "Sender should own the amount of tokens to be listed"
         );
 
+        ListIndex storage listIndex = _addressListedToken[tokenId][_msgSender()];
+
+        if(!listIndex.listed) {
+            listIndex.index = _tokenListings[tokenId].length;
+        }
+
         // Save the listing information
-        _tokenListings[tokenId] = TokenListing({
+        _tokenListings[tokenId][listIndex.index] = TokenListing({
             seller: msg.sender,
             tokenAmount: tokenAmount,
             price: price
         });
+
+        listIndex.listed = true;
+
         // Emit the TokenListed event
         emit TokenListed(_msgSender(), tokenId, tokenAmount, price);
     }
@@ -64,14 +82,18 @@ contract RECMarketPlace is Context, REC {
     /**
      * Buy a listed token amount from a seller
      * @param tokenId the ID of the token being bought
+     * @param seller the address selling the token
      * @param tokenAmount the amount of tokens being bought
      */
-    function buy(uint256 tokenId, uint256 tokenAmount) external payable {
-        // Get the listing information
-        TokenListing storage listing = _tokenListings[tokenId];
+    function buy(uint256 tokenId, address seller, uint256 tokenAmount) external payable {
+        // Get the listing index
+        ListIndex memory listIndex = _addressListedToken[tokenId][seller];
 
-        // Ensure that the token is listed
-        require(listing.seller != address(0), "Token is not listed");
+        // Ensure seller has listed given token Id
+        require(listIndex.listed, "Specified seller has not listed given token ID");
+
+        // Get the listing information
+        TokenListing storage listing = _tokenListings[tokenId][listIndex.index];
 
         // Ensure that the correct amount of tokens are being purchased
         require(tokenAmount <= listing.tokenAmount, "Incorrect amount of tokens being purchased");
@@ -93,14 +115,19 @@ contract RECMarketPlace is Context, REC {
 
         // Update the listing information
         listing.tokenAmount -= tokenAmount;
-        if (listing.tokenAmount == 0) {
-            delete _tokenListings[tokenId];
-        }
     }
 
-    function tokenListing(
+    function tokenListings(
         uint256 tokenId
-    ) public view returns (TokenListing memory) {
+    ) public view returns (TokenListing[] memory) {
         return _tokenListings[tokenId];
+    }
+
+    function tokenSupplyListed(uint256 tokenId) external view returns (uint256) {
+        uint256 total = 0;
+        for (uint256 i = 0; i < _tokenListings[tokenId].length; i++) {
+            total += _tokenListings[tokenId][i].tokenAmount;
+        }
+        return total;
     }
 }
