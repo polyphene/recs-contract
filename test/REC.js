@@ -220,6 +220,16 @@ describe("REC", function () {
                 rec.safeTransferFrom(redeemer.address, nobody.address, 0, 15, [])
             ).to.be.revertedWith("ERC1155: caller is not token owner or approved");
         });
+
+        it("should emit Redeem events", async function () {
+            const { rec, redeemer } = await loadFixture(deployAndMintRECFixture);
+
+            await rec.connect(redeemer).redeem(0, 5);
+
+            await expect(rec.connect(redeemer).redeem(0, 5))
+                .to.emit(rec, "Redeem")
+                .withArgs(redeemer.address, 0, 5);
+        });
     });
 
     describe("Redemption Statement", function () {

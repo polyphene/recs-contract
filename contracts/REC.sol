@@ -7,6 +7,16 @@ import "@openzeppelin/contracts/utils/Context.sol";
 
 contract REC is Context, ERC1155, AccessControl {
     /*****************************************************************
+     * Events
+     *****************************************************************/
+    // Event emitted when an owner redeems tokens
+    event Redeem(
+        address indexed owner,
+        uint256 indexed tokenId,
+        uint256 indexed amount
+    );
+
+    /*****************************************************************
      * Token utilities
      *****************************************************************/
     // Next id used for token
@@ -156,6 +166,8 @@ contract REC is Context, ERC1155, AccessControl {
         if (_validatedRedemptions[id][redeemer]) {
             _validatedRedemptions[id][redeemer] = false;
         }
+
+        emit Redeem(_msgSender(), id, amount);
     }
 
     /**
