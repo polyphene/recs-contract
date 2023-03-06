@@ -10,7 +10,7 @@ task("mint-allocate", "Mints and allocates RECs")
     .addParam("amount", "The amount of RECs to mint")
     .addOptionalParam(
         "allocations",
-        "Allocations to be done on mint, format is '<account>:<amount>,<account>:<amount>,...'"
+        "Allocations to be done on mint, format is '<account>:<amount>:<redeem>,<account>:<amount>:<redeem>,...'"
     )
     .setAction(async (taskArgs) => {
         const contractAddress = taskArgs.contract;
@@ -20,10 +20,12 @@ task("mint-allocate", "Mints and allocates RECs")
 
         let allocated = [];
         let allocations = [];
+        let allocationRedeemed = [];
         tmpAllocations.forEach((i) => {
-            const [account, amount] = i.split(":");
+            const [account, amount, redeem] = i.split(":");
             allocated.push(account);
             allocations.push(amount);
+            allocationRedeemed.push(Boolean(redeem))
         });
 
         const Rec = await ethers.getContractFactory("REC");
@@ -65,7 +67,7 @@ task("mint-allocate", "Mints and allocates RECs")
             })
         }
 
-        const tx = await recContract.mintAndAllocate(uri, amount, allocated, allocations, {
+        const tx = await recContract.mintAndAllocate(uri, amount, allocated, allocations, allocationRedeemed, {
             gasLimit: 1000000000,
             maxPriorityFeePerGas: priorityFee,
         });
