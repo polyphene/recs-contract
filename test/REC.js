@@ -1,6 +1,6 @@
-const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const {loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
+const {expect} = require("chai");
+const {ethers} = require("hardhat");
 
 describe("REC", function () {
     // We define a fixture to reuse the same setup in every test.
@@ -17,7 +17,7 @@ describe("REC", function () {
         await rec.grantRole(await rec.REDEEMER_ROLE(), redeemer.address);
         await rec.grantRole(await rec.AUDITOR_ROLE(), auditor.address);
 
-        return { rec, owner, minter, redeemer, auditor, nobody };
+        return {rec, owner, minter, redeemer, auditor, nobody};
     }
 
     async function deployAndMintRECFixture() {
@@ -29,19 +29,19 @@ describe("REC", function () {
             .connect(payload.minter)
             .mintAndAllocate(uri, 15, [payload.redeemer.address], [15], [false]);
 
-        return { ...payload, uri };
+        return {...payload, uri};
     }
 
     describe("Deployment", function () {
         it("Should set sender as admin for access control", async function () {
-            const { rec, owner } = await loadFixture(deployRECFixture);
+            const {rec, owner} = await loadFixture(deployRECFixture);
 
             await expect(await rec.hasRole(await rec.DEFAULT_ADMIN_ROLE(), owner.address)).to.be
                 .true;
         });
 
         it("Should set sender as minter, redeemer and auditor", async function () {
-            const { rec, owner } = await loadFixture(deployRECFixture);
+            const {rec, owner} = await loadFixture(deployRECFixture);
 
             await expect(await rec.hasRole(await rec.MINTER_ROLE(), owner.address)).to.be.true;
             await expect(await rec.hasRole(await rec.REDEEMER_ROLE(), owner.address)).to.be.true;
@@ -54,7 +54,7 @@ describe("REC", function () {
             const IERC1155_ID = "0xd9b67a26";
             const IERC1155METADATA_ID = "0x0e89341c";
 
-            const { rec } = await loadFixture(deployRECFixture);
+            const {rec} = await loadFixture(deployRECFixture);
 
             expect(await rec.supportsInterface(IERC1155_ID)).to.be.true;
             expect(await rec.supportsInterface(IERC1155METADATA_ID)).to.be.true;
@@ -62,7 +62,7 @@ describe("REC", function () {
         it("Should have the AccessControl interface", async function () {
             const IACCESSCONTROL_ID = "0x7965db0b";
 
-            const { rec } = await loadFixture(deployRECFixture);
+            const {rec} = await loadFixture(deployRECFixture);
 
             expect(await rec.supportsInterface(IACCESSCONTROL_ID)).to.be.true;
         });
@@ -70,7 +70,7 @@ describe("REC", function () {
 
     describe("Mint", function () {
         it("Should revert if sender is not a minter", async function () {
-            const { rec, nobody } = await loadFixture(deployRECFixture);
+            const {rec, nobody} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -80,7 +80,7 @@ describe("REC", function () {
         });
 
         it("Should revert if allocated and allocations have different length", async function () {
-            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+            const {rec, minter, redeemer} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -90,7 +90,7 @@ describe("REC", function () {
         });
 
         it("Should revert if allocated and allocations redeemed have different length", async function () {
-            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+            const {rec, minter, redeemer} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -100,7 +100,7 @@ describe("REC", function () {
         });
 
         it("Should revert if allocations amount to more than supply amount", async function () {
-            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+            const {rec, minter, redeemer} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -110,7 +110,7 @@ describe("REC", function () {
         });
 
         it("Should mint supply to owner of no allocations", async function () {
-            const { rec, minter } = await loadFixture(deployRECFixture);
+            const {rec, minter} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -120,7 +120,7 @@ describe("REC", function () {
         });
 
         it("Should allocate proper amount to recipients", async function () {
-            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+            const {rec, minter, redeemer} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -131,7 +131,7 @@ describe("REC", function () {
         });
 
         it("Should set sender as minter of tokens", async function () {
-            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+            const {rec, minter, redeemer} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -141,7 +141,7 @@ describe("REC", function () {
         });
 
         it("Should set uri for the token", async function () {
-            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+            const {rec, minter, redeemer} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -151,7 +151,7 @@ describe("REC", function () {
         });
 
         it("Should automatically redeem tokens", async function () {
-            const { rec, minter, redeemer } = await loadFixture(deployRECFixture);
+            const {rec, minter, redeemer} = await loadFixture(deployRECFixture);
 
             const uri = "QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx";
 
@@ -168,7 +168,7 @@ describe("REC", function () {
 
     describe("Redeem", function () {
         it("Should revert if sender is not redeemer", async function () {
-            const { rec, nobody } = await loadFixture(deployAndMintRECFixture);
+            const {rec, nobody} = await loadFixture(deployAndMintRECFixture);
 
             await expect(rec.connect(nobody).redeem(0, 5)).to.be.revertedWith(
                 "Redeemer must have REDEEMER_ROLE to redeem tokens"
@@ -176,7 +176,7 @@ describe("REC", function () {
         });
 
         it("Should revert if the account does not own the specified amount", async function () {
-            const { rec, redeemer } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer} = await loadFixture(deployAndMintRECFixture);
 
             await expect(rec.connect(redeemer).redeem(0, 30)).to.be.revertedWith(
                 "ERC1155: burn amount exceeds balance"
@@ -184,7 +184,7 @@ describe("REC", function () {
         });
 
         it("Should revert if the specified id does not exist", async function () {
-            const { rec, redeemer } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer} = await loadFixture(deployAndMintRECFixture);
 
             await expect(rec.connect(redeemer).redeem(2, 5)).to.be.revertedWith(
                 "ERC1155: burn amount exceeds balance"
@@ -192,7 +192,7 @@ describe("REC", function () {
         });
 
         it("Should increase the amount of tokens redeemed by the account for the given id", async function () {
-            const { rec, redeemer } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer} = await loadFixture(deployAndMintRECFixture);
 
             await rec.connect(redeemer).redeem(0, 5);
 
@@ -200,7 +200,7 @@ describe("REC", function () {
         });
 
         it("Should increase the amount of tokens redeemed for the given id", async function () {
-            const { rec, redeemer } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer} = await loadFixture(deployAndMintRECFixture);
 
             await expect(await rec.redeemedSupplyOf(0)).to.equal(0);
 
@@ -210,7 +210,7 @@ describe("REC", function () {
         });
 
         it("Should make transfer of the tokens impossible", async function () {
-            const { rec, redeemer, nobody } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer, nobody} = await loadFixture(deployAndMintRECFixture);
 
             await expect(await rec.redeemedSupplyOf(0)).to.equal(0);
 
@@ -222,9 +222,11 @@ describe("REC", function () {
         });
 
         it("should emit Redeem events", async function () {
-            const { rec, redeemer } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer} = await loadFixture(deployAndMintRECFixture);
 
             await rec.connect(redeemer).redeem(0, 5);
+
+            const receipt = await (await rec.connect(redeemer).redeem(0, 5)).wait();
 
             await expect(rec.connect(redeemer).redeem(0, 5))
                 .to.emit(rec, "Redeem")
@@ -234,7 +236,7 @@ describe("REC", function () {
 
     describe("Redemption Statement", function () {
         it("Should revert if sender is not the tokens minter", async function () {
-            const { rec, redeemer } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer} = await loadFixture(deployAndMintRECFixture);
 
             await expect(
                 rec.connect(redeemer).setRedemptionStatement(0, "redemtpion-statement-url")
@@ -242,7 +244,7 @@ describe("REC", function () {
         });
 
         it("Should revert if not all tokens were redeemed", async function () {
-            const { rec, minter } = await loadFixture(deployAndMintRECFixture);
+            const {rec, minter} = await loadFixture(deployAndMintRECFixture);
 
             await expect(
                 rec.connect(minter).setRedemptionStatement(0, "redemtpion-statement-url")
@@ -252,7 +254,7 @@ describe("REC", function () {
         });
 
         it("Should revert if the redemption statement has already been set", async function () {
-            const { rec, redeemer, minter } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer, minter} = await loadFixture(deployAndMintRECFixture);
 
             await rec.connect(redeemer).redeem(0, 15);
             await rec.connect(minter).setRedemptionStatement(0, "redemption-statement-url");
@@ -263,7 +265,7 @@ describe("REC", function () {
         });
 
         it("Should set the redemption statement", async function () {
-            const { rec, redeemer, minter } = await loadFixture(deployAndMintRECFixture);
+            const {rec, redeemer, minter} = await loadFixture(deployAndMintRECFixture);
 
             await rec.connect(redeemer).redeem(0, 15);
             await rec.connect(minter).setRedemptionStatement(0, "redemption-statement-url");
