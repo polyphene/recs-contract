@@ -1,7 +1,6 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/Context.sol";
-import "hardhat/console.sol";
 
 import "./REC.sol";
 
@@ -67,11 +66,11 @@ contract RECMarketPlace is Context, REC {
         }
 
         // Save the listing information
-        _tokenListings[tokenId][listIndex.index] = TokenListing({
+        _tokenListings[tokenId].push(TokenListing({
             seller: msg.sender,
             tokenAmount: tokenAmount,
             price: price
-        });
+        }));
 
         listIndex.listed = true;
 
@@ -87,7 +86,7 @@ contract RECMarketPlace is Context, REC {
      */
     function buy(uint256 tokenId, address seller, uint256 tokenAmount) external payable {
         // Get the listing index
-        ListIndex memory listIndex = _addressListedToken[tokenId][seller];
+        ListIndex storage listIndex = _addressListedToken[tokenId][seller];
 
         // Ensure seller has listed given token Id
         require(listIndex.listed, "Specified seller has not listed given token ID");
@@ -108,19 +107,35 @@ contract RECMarketPlace is Context, REC {
         payable(listing.seller).transfer(totalCost);
 
         // Transfer the tokens to the buyer
-        safeTransferFrom(listing.seller, _msgSender(), tokenId, tokenAmount, "");
+        _safeTransferFrom(listing.seller, _msgSender(), tokenId, tokenAmount, "");
 
         // Emit the TokenBought event
         emit TokenBought(_msgSender(), listing.seller, tokenId, tokenAmount, listing.price);
 
         // Update the listing information
         listing.tokenAmount -= tokenAmount;
+
+        // Remove listing if all is sold
+        if(listing.tokenAmount == 0) {
+            delete _tokenListings[tokenId][listIndex.index];
+            listIndex.listed = false;
+        }
     }
 
-    function tokenListings(
-        uint256 tokenId
-    ) public view returns (TokenListing[] memory) {
+    function tokenListings(uint256 tokenId) public view returns (TokenListing[] memory) {
         return _tokenListings[tokenId];
+    }
+
+    function tokenListing(uint256 tokenId, uint256 listingIndex) public view returns (TokenListing memory) {
+        return _tokenListings[tokenId][listingIndex];
+    }
+
+    function isSelling(address seller, uint256 tokenId) public view returns (bool) {
+       return _addressListedToken[tokenId][seller].listed;
+    }
+
+    function sellerListing(address seller, uint256 tokenId) public view returns (TokenListing memory) {
+        return _tokenListings[tokenId][_addressListedToken[tokenId][seller].index];
     }
 
     function tokenSupplyListed(uint256 tokenId) external view returns (uint256) {
