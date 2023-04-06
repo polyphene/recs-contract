@@ -8,6 +8,11 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
     solidity: "0.8.15",
+    settings: {
+        optimizer: {
+            enabled: true,
+        },
+    },
     defaultNetwork: "hyperspace",
     networks: {
         hyperspace: {
