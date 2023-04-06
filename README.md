@@ -68,6 +68,18 @@ For more information run:
 yarn hardhat --help
 ```
 
+### Deployment
+
+```shell
+yarn hardhat deploy
+```
+
+### Test
+
+```shell
+yarn hardhat test --network hardhat
+```
+
 ## Inspirations 
 
 To create this project we were inspired by the [FEVM Hardhat Kit](https://github.com/filecoin-project/FEVM-Hardhat-Kit) and 
