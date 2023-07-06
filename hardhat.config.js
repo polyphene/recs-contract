@@ -16,8 +16,8 @@ module.exports = {
     defaultNetwork: "hyperspace",
     networks: {
         hyperspace: {
-            url: "https://api.hyperspace.node.glif.io/rpc/v1",
-            chainId: 3141,
+            url: "https://filecoin-calibration.chainup.net/rpc/v1",
+            chainId: 314159,
             accounts: ["0x570a1f99caf2860cbbb34599473786fdb4450b179063be745f9b13cee0c82241"],
         },
     },

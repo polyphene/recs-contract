@@ -148,11 +148,6 @@ contract REC is Context, ERC1155, AccessControl {
     }
 
     function _redeem(address redeemer, uint256 id, uint256 amount) internal {
-        require(
-            hasRole(REDEEMER_ROLE, redeemer),
-            "Redeemer must have REDEEMER_ROLE to redeem tokens"
-        );
-
         // Burn tokens
         _burn(redeemer, id, amount);
 
@@ -167,7 +162,7 @@ contract REC is Context, ERC1155, AccessControl {
             _validatedRedemptions[id][redeemer] = false;
         }
 
-        emit Redeem(_msgSender(), id, amount);
+        emit Redeem(redeemer, id, amount);
     }
 
     /**

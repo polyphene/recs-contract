@@ -30,7 +30,7 @@ module.exports = async ({ deployments }) => {
 const callRpc = async (method, params) => {
     const options = {
         method: "POST",
-        url: "https://api.hyperspace.node.glif.io/rpc/v1",
+        url: "https://api.calibration.node.glif.io/",
         headers: {
             "Content-Type": "application/json",
         },

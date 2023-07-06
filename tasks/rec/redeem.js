@@ -22,7 +22,7 @@ task("redeem", "Redeem owned supply of RECs token")
         async function callRpc(method, params) {
             var options = {
                 method: "POST",
-                url: "https://wallaby.node.glif.io/rpc/v0",
+                url: "https://api.calibration.node.glif.io/",
                 headers: {
                     "Content-Type": "application/json",
                 },
