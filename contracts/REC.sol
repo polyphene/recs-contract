@@ -16,6 +16,13 @@ contract REC is Context, ERC1155, AccessControl {
         uint256 indexed amount
     );
 
+    // Event emitted when minter set redemption statement
+    event RedemptionStatementSet(
+        address indexed minter,
+        uint256 indexed tokenId,
+        string indexed cid
+    );
+
     /*****************************************************************
      * Token utilities
      *****************************************************************/
@@ -204,6 +211,8 @@ contract REC is Context, ERC1155, AccessControl {
         require(tempEmptyStringTest.length == 0, "Redemption statement can not be updated");
 
         _redemptionStatementURI[id] = redemptionStatement;
+
+        emit RedemptionStatementSet(_msgSender(), id, redemptionStatement);
     }
 
     /**
